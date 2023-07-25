@@ -1,0 +1,92 @@
+{% extends 'admin/base.html' %} <!-- venv -> Lib -> flask_admin -> templates -> bootstrap4 -> admin -> base.html -->
+
+{% block body %}
+{% if current_user.is_authenticated %}
+<h1>WELCOME {{ current_user.name }} TO ADMINISTRATOR WEBSITE</h1>
+
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+        <table class="table">
+            <tr>
+                <th>Mã danh mục</th>
+                <th>Tên danh mục</th>
+                <th>Số lượng sản phẩm</th>
+            </tr>
+            {% for s in stats %}
+            <tr>
+                <td>{{ s[0] }}</td>
+                <td>{{ s[1] }}</td>
+                <td>{{ s[2] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="col-md-6 col-xs-12">
+        <canvas id="myCategoryChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let name = [], info = []
+    let borderColors = [], colors = []
+    let r, g, b;
+
+    {% for s in stats %}
+        name.push('{{ s[1] }}')
+        info.push({{ s[2] }})
+
+        r = Math.random()*255
+        g = Math.random()*255
+        b = Math.random()*255
+
+        colors.push(`rgba(${r}, ${g}, ${b}, 0.5)`)
+        borderColors.push(`rgba(${r}, ${g}, ${b}, 0.5)`)
+    {% endfor %}
+
+    window.onload = function() {
+        const ctx  = document.getElementById('myCategoryChart').getContext('2d');
+
+        loadChart(ctx, name, info, 'doughnut', colors, borderColors);
+    }
+
+    function loadChart(ctx, labels, data, type, colors, borderColors) {
+        new Chart(ctx, {
+            type: type,
+            data: {
+                labels: name,
+                datasets: [{
+                    label: 'Thống kê số sản phẩm theo danh mục',
+                    data: info,
+                    backgroundColor: colors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+</script>
+
+{% else %}
+<h1 class="text-center text-danger">ĐĂNG NHẬP QUẢN TRỊ</h1>
+<form method="post" action="{{ url_for('signin_admin') }}">
+        <label for="username">Username</label>
+        <input type="text" class="form-control" id="username" name="username" required />
+        <div class="form-group">
+            <label for="pass">Mật khẩu</label>
+            <input type="password" class="form-control" id="pass" name="password" />
+        </div>
+        <input type="submit" value="Đăng nhập" class="btn btn-danger" />
+</form>
+
+{% endif %}
+{% endblock %}
+

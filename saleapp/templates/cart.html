@@ -1,0 +1,54 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Giỏ hàng{% endblock %}
+
+{% block content %}
+<h1 class="text-center text-danger">GIỎ HÀNG</h1>
+{% if 'cart' in session and session['cart'] %}
+<table class="table">
+    <tr>
+        <th>Mã sản phẩm</th>
+        <th>Tên sản phẩm</th>
+        <th>Đơn giá</th>
+        <th>Số lượng sản phẩm</th>
+        <th></th>
+    </tr>
+    {% for c in session['cart'].values() %}
+    <tr id="product{{ c.id }}">
+        <td>{{ c.id }}</td>
+        <td>{{ c.name }}</td>
+        <td>{{ c.price }}</td>
+        <td>
+            <div class="form-group">
+                <!--Khi người dùng nhấn vào box thì sự kiện onfocus() kích hoạt, sau khi thao tác xong nếu người dùng-->
+                <!--nhấn ra ngoài thì sự kiện onblur() kích hoạt => gọi hàm (ở cart.js) để update dữ liệu-->
+                <input type="number"
+                       min="1"
+                       onblur="updateCart({{ c.id }}, this)"
+                       value="{{ c.quantity }}"
+                       class="form-control"/>
+                <!--this tham chiếu tới chính đối tượng đang xử lý sự kiện (this đại diện cho nguyên cái input)-->
+            </div>
+        </td>
+        <td>
+            <input type="button" value="Xoá" class="btn btn-danger" onclick="deleteCart({{ c.id }})">
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="alert alert-info">
+    <h5>Tổng sản phẩm: <span class="cart-counter">{{ stats.total_quantity }}</span></h5>
+    <h5>Tổng tiền: <span id="total-amount"> {{ "{:,.1f}".format(stats.total_amount) }}</span> VND</h5>
+</div>
+
+{% if current_user.is_authenticated %}
+<input type="button" value="Thanh toán" class="btn btn-success" onclick="pay()">
+{% else %}
+<a href="{{url_for('user_signin', next='cart')}}">Đăng nhập để thanh toán</a>
+{% endif %}
+<br><br>
+{% else %}
+<p><i>Không có sản phẩm nào</i></p>
+{% endif %}
+{% endblock %}

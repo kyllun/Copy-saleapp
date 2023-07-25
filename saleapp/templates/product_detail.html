@@ -1,0 +1,69 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Chi tiết sản phẩm{% endblock %}
+
+{% block content %}
+<h1 class="text-center text-info" >{{ product.name }}</h1>
+
+<div class="row">
+      <div class="col-md-5 col-xs-12">
+          <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+      </div>
+      <div class="col-md-7 col-xs-12">
+          <h2>{{ product.name }}</h2>
+          <p>{{ product.description }}</p>
+          <h4>{{ "{:,.1f}".format(product.price) }} VND</h4>
+      </div>
+  </div>
+<hr>
+{% if current_user.is_authenticated %}
+<div>
+    <div class="form-group" >
+        <textarea class="form-control" id="commentId" placeholder="Nhập nội dung bình luận"></textarea>
+    </div>
+    <input type="button"
+           class="btn btn-primary"
+           onclick="addComment({{ product.id }})"
+           value="Bình luận" />
+</div>
+{% else %}
+<a href="{{ url_for('user_signin', next ='product_detail', product_id=product.id) }}">Đăng nhập để bình luận</a>
+{% endif %}
+<br><br>
+
+<div id="commentArea">
+    {% for c in comments %}
+    <div class="row">
+        <div class="col-md-1 col-xs-4">
+            {% if c.user.avatar and c.user.avatar.startswith('https') %}
+            <img src="{{c.user.avatar}}" class="img-fluid rounded-circle" alt="demo" />
+            {% else %}
+            <img src="{{ url_for('static', filename='images/cute_girl.jpg') }}" class="img-fluid rounded-circle" alt="demo" />
+            {% endif %}
+        </div>
+        <div class="col-md-11 col-xs-8">
+            <p>{{ c.content }}</p>
+            <p><em class="my-date">{{ c.created_date }}</em></p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if pages > 1 %}
+<ul class="pagination">
+    {% for idx in range(1, pages + 1) %}
+    <li class="page-item">
+        <a class="page-link" href="{{ url_for('product_detail', product_id = product.id, page=idx) }}">{{ idx }}</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<script>
+    window.onload = function() {
+        let d = document.getElementsByClassName('my-date')
+        for (let i = 0; i < d.length; i++)
+            d[i].innerText = moment(d[i].innerText).locale('vi').fromNow()
+    }
+</script>
+{% endblock %}
